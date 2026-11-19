@@ -1,0 +1,304 @@
+<title>Panel Maymanta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: cabecera fija + rejilla de paneles de KPI, barras y tablas. Identidad Maymanta: terracota sobre neutro cálido. */
+  :root{
+    --bg:#f6f1ea; --surface:#ffffff; --surface-2:#fbf7f1;
+    --fg:#2a2320; --muted:#8a7d71; --border:#e7ddd1;
+    --accent:#c4541f; --accent-soft:#f0d9cb;
+    --good:#2e7d5b; --good-bg:#e2f0e8;
+    --warn:#b5780a; --warn-bg:#f6ebd4;
+    --bad:#c0392b; --bad-bg:#f6dcd8;
+    --font-head:"Archivo",system-ui,sans-serif;
+    --font-body:"Inter",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#191411; --surface:#231c18; --surface-2:#2b221d;
+    --fg:#f1e9e1; --muted:#a89a8d; --border:#3a2f28;
+    --accent:#e8713a; --accent-soft:#4a2e20;
+    --good:#5bbf8f; --good-bg:#1d3329;
+    --warn:#e0a53a; --warn-bg:#3a2e16;
+    --bad:#e8796b; --bad-bg:#3a211d;
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#191411; --surface:#231c18; --surface-2:#2b221d;
+    --fg:#f1e9e1; --muted:#a89a8d; --border:#3a2f28;
+    --accent:#e8713a; --accent-soft:#4a2e20;
+    --good:#5bbf8f; --good-bg:#1d3329;
+    --warn:#e0a53a; --warn-bg:#3a2e16;
+    --bad:#e8796b; --bad-bg:#3a211d;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.5;
+    font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+    background:var(--accent);z-index:30}
+  h1,h2,h3{font-family:var(--font-head);text-wrap:balance;margin:0}
+  .num{font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--accent);color:#fff;
+    padding-block:.75rem;
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .hwrap{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:.55rem;min-width:0}
+  .brand b{font-family:var(--font-head);font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
+  .brand span{font-size:.82rem;opacity:.9}
+  .tag{margin-left:auto;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:999px;
+    padding:.2rem .7rem;font-size:.78rem;font-weight:600;white-space:nowrap}
+  .tbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;
+    border-radius:999px;padding:.25rem .7rem;font:inherit;font-size:.78rem;cursor:pointer}
+
+  main{max-width:1180px;margin:0 auto;padding-block:1.1rem 2.5rem;
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .sec-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+    font-weight:700;margin:1.8rem 0 .7rem}
+  .sec-title:first-child{margin-top:.4rem}
+
+  .kpis{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem}
+  .kpi .lbl{font-size:.76rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .kpi .val{font-family:var(--font-head);font-size:2rem;font-weight:800;margin-top:.25rem;letter-spacing:-.02em}
+  .kpi .val small{font-size:1rem;font-weight:700;color:var(--muted)}
+  .kpi .sub{font-size:.8rem;color:var(--muted);margin-top:.15rem}
+  .kpi .src{font-size:.68rem;color:var(--muted);margin-top:.5rem;opacity:.85}
+  .kpi.hl{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+
+  .pill{display:inline-block;border-radius:999px;padding:.08rem .5rem;font-size:.72rem;font-weight:700}
+  .p-good{background:var(--good-bg);color:var(--good)} .p-warn{background:var(--warn-bg);color:var(--warn)}
+  .p-bad{background:var(--bad-bg);color:var(--bad)} .p-ex{background:var(--accent-soft);color:var(--accent)}
+
+  .grid{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.05rem 1.15rem;min-width:0}
+  .card h3{font-size:1rem;font-weight:700}
+  .card .hint{font-size:.78rem;color:var(--muted);margin:.15rem 0 .9rem}
+
+  .bars{display:flex;flex-direction:column;gap:.5rem}
+  .bar{display:grid;grid-template-columns:9.5rem 1fr auto;gap:.6rem;align-items:center;font-size:.85rem}
+  .bar .n{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar .track{display:block;background:var(--surface-2);border-radius:7px;height:1.05rem;overflow:hidden}
+  .bar .fill{display:block;height:100%;background:var(--accent);border-radius:7px;min-width:2px}
+  .bar .fill.alt{background:#9c6b4f}
+  .bar .v{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+
+  table{width:100%;border-collapse:collapse;font-size:.86rem}
+  th,td{text-align:left;padding:.4rem .4rem;border-bottom:1px solid var(--border)}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+  td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+
+  .me{display:grid;gap:.6rem;grid-template-columns:repeat(2,1fr)}
+  .me .box{border:1px solid var(--border);border-radius:11px;padding:.7rem .8rem}
+  .me .box .c{font-family:var(--font-head);font-size:1.7rem;font-weight:800;line-height:1}
+  .me .box .t{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:.1rem}
+  .me .box.star{background:var(--good-bg)} .me .box.star .c{color:var(--good)}
+  .me .box.dog{background:var(--bad-bg)} .me .box.dog .c{color:var(--bad)}
+
+  .spark{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .spark svg{width:170px;height:70px}
+  .spark .pts{font-size:.85rem;color:var(--muted)}
+  .spark .pts b{color:var(--fg);font-family:var(--font-head);font-size:1.3rem}
+
+  footer{max-width:1180px;margin:1.6rem auto 0;
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .note{background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--accent);
+    border-radius:11px;padding:.9rem 1.05rem;font-size:.82rem;color:var(--muted)}
+  .note b{color:var(--fg)}
+  .foot{font-size:.74rem;color:var(--muted);margin:.9rem 0 0;text-align:center}
+  @media (max-width:520px){.bar{grid-template-columns:7rem 1fr auto}}
+</style>
+
+<header>
+  <div class="hwrap">
+    <div class="brand"><b>Maymanta</b><span>Centro de control · %FC</span></div>
+    <div class="tag">
+      <span class="chip">📍 Barcelona · RVC27</span>
+      <span class="chip">🗓 Octubre 2026</span>
+      <button class="tbtn" id="theme">◐ Tema</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="sec-title">Resumen del mes</div>
+  <div class="kpis">
+    <div class="kpi">
+      <div class="lbl">Ventas netas</div>
+      <div class="val num">392.958 <small>€</small></div>
+      <div class="sub">Brutas 440.862 € · Dto. 8.608 €</div>
+      <div class="src">Simphony RVC27 · Daily Operations</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Comensales</div>
+      <div class="val num">6.139</div>
+      <div class="sub">2.104 tickets</div>
+      <div class="src">Simphony RVC27</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Ticket medio</div>
+      <div class="val num">64,01 <small>€</small></div>
+      <div class="sub">Venta neta ÷ comensales</div>
+      <div class="src">Simphony RVC27</div>
+    </div>
+    <div class="kpi hl">
+      <div class="lbl">%FC costeado (cocina)</div>
+      <div class="val num">20,67 <small>%</small> <span class="pill p-good">bajo 25%</span></div>
+      <div class="sub">Cobertura 51,8% de la venta de cocina</div>
+      <div class="src">Coste BDM × uds vendidas (89 platos casados)</div>
+    </div>
+  </div>
+
+  <div class="sec-title">Food cost</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Evolución del %FC</h3>
+      <p class="hint">Últimos tres periodos registrados en el panel.</p>
+      <div class="spark">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="Serie de food cost">
+          <polyline points="10,11 50,29 90,21.5" fill="none" stroke="var(--accent)" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="10" cy="11" r="3" fill="var(--accent)"/>
+          <circle cx="50" cy="29" r="3" fill="var(--accent)"/>
+          <circle cx="90" cy="21.5" r="3.4" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.3"/>
+        </svg>
+        <div class="pts">33,1% → 31,9% → <b>32,4%</b><br>último periodo</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Referencias de %FC</h3>
+      <p class="hint">Tres formas de mirar el food cost del mes.</p>
+      <table>
+        <tr><td>%FC costeado (cocina, real)</td><td class="r"><b>20,67%</b></td><td class="r"><span class="pill p-good">ok</span></td></tr>
+        <tr><td>%FC teórico global</td><td class="r">30,6%</td><td class="r"><span class="pill p-ex">ejemplo</span></td></tr>
+        <tr><td>Serie último periodo</td><td class="r">32,4%</td><td class="r"><span class="pill p-warn">vigilar</span></td></tr>
+        <tr><td>Merma del mes</td><td class="r">4.900 €</td><td class="r"><span class="pill p-ex">ejemplo</span></td></tr>
+        <tr><td>Inventario valorado (cierre)</td><td class="r">21.690 €</td><td class="r"><span class="pill p-good">BDM</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec-title">Compras del mes · 61.781 € (+ 732 € indirectos)</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Compras por categoría</h3>
+      <p class="hint">Alimentos 42.505 € · Bebidas 19.276 €. Reparto automático por nombre de producto (aproximado).</p>
+      <div class="bars">
+        <div class="bar"><span class="n">Abarrotes</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="v">14.972 €</span></div>
+        <div class="bar"><span class="n">Carnes</span><span class="track"><span class="fill" style="width:94.4%"></span></span><span class="v">14.140 €</span></div>
+        <div class="bar"><span class="n">Vinos y espumosos</span><span class="track"><span class="fill alt" style="width:65.2%"></span></span><span class="v">9.767 €</span></div>
+        <div class="bar"><span class="n">Destilados y licores</span><span class="track"><span class="fill alt" style="width:62.7%"></span></span><span class="v">9.389 €</span></div>
+        <div class="bar"><span class="n">Verduras y hortalizas</span><span class="track"><span class="fill" style="width:42%"></span></span><span class="v">6.290 €</span></div>
+        <div class="bar"><span class="n">Frutas</span><span class="track"><span class="fill" style="width:15%"></span></span><span class="v">2.245 €</span></div>
+        <div class="bar"><span class="n">Lácteos y huevos</span><span class="track"><span class="fill" style="width:13.7%"></span></span><span class="v">2.053 €</span></div>
+        <div class="bar"><span class="n">Pescados y mariscos</span><span class="track"><span class="fill" style="width:8.6%"></span></span><span class="v">1.286 €</span></div>
+        <div class="bar"><span class="n">Café</span><span class="track"><span class="fill" style="width:4.3%"></span></span><span class="v">638 €</span></div>
+        <div class="bar"><span class="n">Hierbas</span><span class="track"><span class="fill" style="width:3.3%"></span></span><span class="v">496 €</span></div>
+        <div class="bar"><span class="n">Repostería</span><span class="track"><span class="fill" style="width:1.2%"></span></span><span class="v">183 €</span></div>
+        <div class="bar"><span class="n">Charcutería</span><span class="track"><span class="fill" style="width:1.2%"></span></span><span class="v">176 €</span></div>
+        <div class="bar"><span class="n">Cervezas</span><span class="track"><span class="fill alt" style="width:.8%"></span></span><span class="v">120 €</span></div>
+        <div class="bar"><span class="n">Frutos secos</span><span class="track"><span class="fill" style="width:.2%"></span></span><span class="v">26 €</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Ventas por franja</h3>
+      <p class="hint">Dónde se hace la caja a lo largo del día.</p>
+      <div class="bars">
+        <div class="bar"><span class="n">Cena</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="v">207.745 €</span></div>
+        <div class="bar"><span class="n">Comida</span><span class="track"><span class="fill" style="width:72.2%"></span></span><span class="v">149.969 €</span></div>
+        <div class="bar"><span class="n">Late Night 1</span><span class="track"><span class="fill" style="width:12.6%"></span></span><span class="v">26.216 €</span></div>
+        <div class="bar"><span class="n">Late Night</span><span class="track"><span class="fill" style="width:4.3%"></span></span><span class="v">9.029 €</span></div>
+      </div>
+      <p class="hint" style="margin-top:.9rem">La cena concentra el 53% de la venta. Fuente: Simphony RVC27.</p>
+    </div>
+  </div>
+
+  <div class="sec-title">Platos</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Más vendidos (por facturación)</h3>
+      <p class="hint">Excluye "Comida Abierto" (116.253 € sin plato asignado).</p>
+      <div class="bars">
+        <div class="bar"><span class="n">Lomo saltado</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="v">11.637 €</span></div>
+        <div class="bar"><span class="n">Ceviche piurano</span><span class="track"><span class="fill" style="width:72.8%"></span></span><span class="v">8.468 €</span></div>
+        <div class="bar"><span class="n">Menú almuerzo</span><span class="track"><span class="fill" style="width:53.3%"></span></span><span class="v">6.205 €</span></div>
+        <div class="bar"><span class="n">Arroz con pato (2pax)</span><span class="track"><span class="fill" style="width:45.9%"></span></span><span class="v">5.344 €</span></div>
+        <div class="bar"><span class="n">Croqueta limeña</span><span class="track"><span class="fill" style="width:39.9%"></span></span><span class="v">4.649 €</span></div>
+        <div class="bar"><span class="n">Panceta pachikay</span><span class="track"><span class="fill" style="width:39.8%"></span></span><span class="v">4.630 €</span></div>
+        <div class="bar"><span class="n">Ceviche de puerto</span><span class="track"><span class="fill" style="width:33.1%"></span></span><span class="v">3.847 €</span></div>
+        <div class="bar"><span class="n">Pulpo anticuchero</span><span class="track"><span class="fill" style="width:31.7%"></span></span><span class="v">3.686 €</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Platos a vigilar (food cost alto)</h3>
+      <p class="hint">% de coste sobre venta, en platos con facturación relevante.</p>
+      <table>
+        <thead><tr><th>Plato</th><th class="r">Uds</th><th class="r">%FC</th></tr></thead>
+        <tbody>
+          <tr><td>Solomillo 250 gr</td><td class="r">88</td><td class="r"><span class="pill p-bad">35,7%</span></td></tr>
+          <tr><td>Tortita de choclo</td><td class="r">209</td><td class="r"><span class="pill p-bad">31,8%</span></td></tr>
+          <tr><td>Pulpo anticuchero</td><td class="r">124</td><td class="r"><span class="pill p-warn">29,2%</span></td></tr>
+          <tr><td>Entraña al Josper 300 gr</td><td class="r">104</td><td class="r"><span class="pill p-warn">28,8%</span></td></tr>
+          <tr><td>Lomo saltado</td><td class="r">348</td><td class="r"><span class="pill p-warn">28,4%</span></td></tr>
+          <tr><td>Tres leches</td><td class="r">231</td><td class="r"><span class="pill p-warn">28,0%</span></td></tr>
+          <tr><td>Pan de masa madre</td><td class="r">271</td><td class="r"><span class="pill p-warn">27,3%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec-title">Ingeniería de menú · 44 platos</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Clasificación</h3>
+      <p class="hint">Margen vs. rotación (cortes: margen 21,9 € · mix 1,59%).</p>
+      <div class="me">
+        <div class="box star"><div class="c num">10</div><div class="t">⭐ Estrellas</div></div>
+        <div class="box"><div class="c num">13</div><div class="t">🐴 Caballos</div></div>
+        <div class="box"><div class="c num">13</div><div class="t">❓ Enigmas</div></div>
+        <div class="box dog"><div class="c num">8</div><div class="t">🐶 Perros</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Estrellas y perros</h3>
+      <p class="hint">Lo que más conviene empujar y lo que conviene revisar.</p>
+      <table>
+        <tr><td>⭐ Lomo saltado</td><td class="r">348 uds</td></tr>
+        <tr><td>⭐ Ceviche 100% Perú (corvina)</td><td class="r">262 uds</td></tr>
+        <tr><td>⭐ Panceta pachikay y chaufa</td><td class="r">154 uds</td></tr>
+        <tr><td>🐶 Mostrito</td><td class="r"><span class="pill p-bad">FC 38,3%</span></td></tr>
+        <tr><td>🐶 Tallarín saltado</td><td class="r"><span class="pill p-bad">FC 29,2%</span></td></tr>
+        <tr><td>🐶 Ensalada criolla</td><td class="r"><span class="pill p-warn">FC 18,7%</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <div class="note">
+      <b>De dónde salen estos números.</b> Ventas y compras reales de octubre 2026 (Simphony RVC27 ·
+      "Compras Maymanta Octubre", 732 líneas, total 62.513,77 €). El reparto de compras por categoría es
+      automático según el nombre del producto y la cuenta contable (aproximado). El inventario (03-11-26)
+      se valoró con el BDM y se usa igual como cierre inicial y final. El <b>%FC teórico global (30,6%)</b> y
+      la <b>merma (4.900 €)</b> siguen marcados como <b>ejemplo</b>: son los que faltan por cargar con datos
+      reales. El %FC costeado (20,67%) sí es real, pero solo cubre el 51,8% de la venta de cocina (los platos
+      que ya tienen ficha en el BDM).
+    </div>
+    <p class="foot">Panel de solo lectura · se regenera desde los Excel maestros (BDM + Simphony) · Maymanta Barcelona</p>
+  </footer>
+</main>
+
+<script>
+  (function(){
+    var r=document.documentElement,b=document.getElementById("theme"),KEY="mm-theme";
+    try{var s=localStorage.getItem(KEY);if(s)r.setAttribute("data-theme",s);}catch(e){}
+    b.addEventListener("click",function(){
+      var cur=r.getAttribute("data-theme");
+      var sysDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;
+      var next=cur? (cur==="dark"?"light":"dark") : (sysDark?"light":"dark");
+      r.setAttribute("data-theme",next);
+      try{localStorage.setItem(KEY,next);}catch(e){}
+    });
+  })();
+</script>
